@@ -1,0 +1,67 @@
+---
+title: "Final Project - Hypothesis"
+author: "Zainab Sherani"
+date: "5/7/2020"
+output: html_document
+---
+
+Is the average BMI of adults with diabetes higher than the average BMI of adults without diabetes?
+
+```{r setup, include=FALSE}
+#install.packages("Hmisc")
+library(Hmisc)
+library(dplyr)
+library(ggplot2)
+
+setwd("/Users/zainabsherani/Desktop/INST408F/Week 11/")
+# use sasxport function to import xpt file
+BRFSS <- sasxport.get("BRFSS18.xpt")
+
+# filter for 1 and 3 which represent "have diabetes" and "do not have diabetes" 
+BRFSS <- filter(BRFSS, (diabete3 == 1 | diabete3 == 3))
+
+# recode diabete3 variable
+BRFSS$diabete3[BRFSS$diabete3 == 1] <- "Yes"
+BRFSS$diabete3[BRFSS$diabete3 == 3] <- "No"
+
+# select x.bmi5 and diabete3 columns
+BRFSS <- select(BRFSS, diabete3, x.bmi5)
+
+# remove rows with any NAs 
+br <- drop_na(BRFSS)
+
+```
+
+
+## Hypothesis Test = Is the average BMI of adults with diabetes higher than the average BMI of adults without diabetes?
+(Module 9 ICE is a good resource to check)
+
+**Null Hypothesis** = The mean BMI for those with diabetes is less than or equal to those without diabetes. 
+
+**Alternative Hypothesis** = The mean BMI for those with diabetes is greater than those without diabetes. 
+
+**Alpha** = 0.05
+
+**Type of test (upper, lower, two-sided)** = Upper-tailed
+
+**P-Value** = < 2.2e-16
+
+**Reject or fail to reject the null hypothesis?:** We reject the null hypothesis.
+
+**Why or why not (referring to the previous question)?:** We reject the null hypothesis because our **p-value** is less than our **alpha** of 0.05.
+
+**Conclusion:** *At a significance level of 0.05, we reject the null hypothesis and conclude that there is statistically significant evidence that the mean BMI of those with diabetes is greater than those without diabetes.*
+```{r cars}
+with(br, wilcox.test(x=br$x.bmi5[br$diabete3 == "Yes"], 
+                        y=br$x.bmi5[br$diabete3 == "No"],
+                        alternative = "greater"))
+```
+## Visualizations 
+The mean BMI for those with diabetes is higher than those without diabetes as shown by the boxplot. 
+
+```{r}
+ggplot(data=br) +
+    geom_boxplot(mapping = aes(x=as.factor(diabete3), y=x.bmi5,fill=as.factor(diabete3))) +
+   labs(title="Plot of BMI by Diabetes Status",x="Diabetes", y = "BMI", fill="Diabetes")
+```
+
